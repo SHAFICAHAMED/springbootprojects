@@ -1,0 +1,56 @@
+itha power shell ah podanum apo than varum illa na oru error varum
+$env:DATASOURCE_URL="jdbc:mysql://localhost:3306/employee_db?useSSL=false&serverTimezone=UTC"
+$env:DATASOURCE_USER="root"
+$env:DATASOURCE_PASSWORD="root"
+
+this is important  render la podanum. env variable la
+DATASOURCE_URL=jdbc:mysql://mysql-3be38366-shafic-first.g.aivencloud.com:28658/pollingDB?useSSL=true&serverTimezone=UTC&allowPublicKeyRetrieval=true
+DATASOURCE_USER=avnadmin
+DATASOURCE_PASSWORD=AVNS_QTScfskgVNETSRdZHBy
+
+
+after that just type this comment
+./mvnw package or ./mvnw clean package ithu than namaku jar file ah convert pannum. ithu than namma app
+
+
+docker commnets
+after that
+docker login
+docker build -t demo-deployment .
+after that
+docker tag demo-deployment shafic1111/demo-deployment:latest
+
+
+
+
+after that	
+docker push shafic1111/demo-deployment
+
+-------example command---------------------------
+docker tag reshma shafic1111/demo-deployment:beta
+docker push shafic1111/reshma:beta
+------------------------------------------------
+
+after
+docker repository la poitu athoda name edukanum docker hub la ponga first eg:shafic1111/demo-deployment
+render la webservice create pannanum
+docker.io/shafic1111/demo-deployment:latest
+
+
+FRONTEND LINK
+https://shimmering-choux-730e09.netlify.app/
+
+BACKEND LINK
+https://demo-deployment-latest-b2xy.onrender.com
+
+
+polling app:
+backa end
+https://polling-app-latest.onrender.com
+
+dskip test nu oru error varum atha clear pannan pom file ah jdk 17 ah change pannanum
+no such file vantha docker file ah create pannirukanum and naming correct ah vaikanum Dockerfile itha vaikanum 
+
+
+logger checking
+docker logs -f navidp-container

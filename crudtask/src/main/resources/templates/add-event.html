@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Event</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body class="container mt-5">
+<h2>Add New Event</h2>
+<form th:action="@{/events/save}" th:object="${event}" method="post">
+    <div class="mb-3">
+        <label for="title">Title</label>
+        <input type="text" th:field="*{title}" id="title" class="form-control" required />
+    </div>
+    <div class="mb-3">
+        <label for="description">Description</label>
+        <textarea th:field="*{description}" id="description" class="form-control"></textarea>
+    </div>
+    <div class="mb-3">
+        <label for="eventDate">Date and Time</label>
+        <input type="datetime-local" th:field="*{eventDate}" id="eventDate" class="form-control" required />
+    </div>
+    <div class="mb-3">
+        <label for="location">Location</label>
+        <input type="text" th:field="*{location}" id="location" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label for="status">Status</label>
+        <select th:field="*{status}" id="status" class="form-select">
+            <option th:value="UPCOMING">Upcoming</option>
+            <option th:value="COMPLETED">Completed</option>
+            <option th:value="CANCELLED">Cancelled</option>
+        </select>
+    </div>
+    <button type="submit" class="btn btn-success">Save</button>
+    <a th:href="@{/events}" class="btn btn-secondary">Back</a>
+</form>
+</body>
+</html>

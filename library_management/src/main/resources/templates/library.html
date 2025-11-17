@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Library Management System</title>
+    <style>
+        /* (use your CSS from original) */
+        body {
+          font-family: Arial, sans-serif;
+          background-color: #eef2f3;
+          margin: 0;
+          padding: 0;
+        }
+        /* ... rest of your CSS ... */
+        .container { width:85%; margin:30px auto; background:#fff; padding:20px 30px; border-radius:15px; box-shadow:0 0 15px rgba(0,0,0,0.1) }
+        h1,h2,h3{text-align:center;color:#2c3e50}
+        .menu{ text-align:center; margin:20px 0 }
+        .menu button{ padding:10px 20px; margin:5px; border:none; background-color:#4CAF50; color:white; border-radius:5px; cursor:pointer; }
+        .menu button:hover{ background-color:#45a049 }
+        .overdue{ background-color:#fdd }
+        .action{ background-color:#3498db; color:white; border:none; border-radius:5px; padding:6px 10px; cursor:pointer;}
+        .edit{ background-color:#f39c12 } .delete{ background-color:#e74c3c }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Library Management System</h1>
+    <div class="menu">
+        <button onclick="showSection('admin')">Admin</button>
+        <button onclick="showSection('student')">Student</button>
+    </div>
+
+    <!-- Admin -->
+    <div id="admin" class="section" style="display:none;">
+        <h2>Admin Panel</h2>
+        <form id="adminLoginForm" onsubmit="return false;">
+            <label>Admin ID:</label>
+            <input type="number" id="adminId" placeholder="Enter Admin ID">
+            <label>Password:</label>
+            <input type="password" id="adminPass" placeholder="Enter Password">
+            <button type="button" onclick="adminLogin()">Login</button>
+        </form>
+
+        <div id="adminPanel" style="display:none;">
+            <h3>Add / Edit Book</h3>
+            <form id="addBookForm" onsubmit="return false;">
+                <label>Author Name:</label>
+                <input type="text" id="authorName" placeholder="Enter Author Name">
+                <label>Book Name:</label>
+                <input type="text" id="bookName" placeholder="Enter Book Name">
+                <input type="hidden" id="editBookId">
+                <button type="button" onclick="addOrUpdateBook()">Save Book</button>
+            </form>
+
+            <label>Search Book:</label>
+            <input type="text" id="adminSearch" placeholder="Search by author or book" onkeyup="loadBooks()">
+
+            <h3>Book List</h3>
+            <table id="bookTable">
+                <tr><th>Author</th><th>Book</th><th>ID</th><th>Status</th><th>Borrower ID</th><th>Due Date</th><th>Actions</th></tr>
+            </table>
+        </div>
+    </div>
+
+    <!-- Student -->
+    <div id="student" class="section" style="display:none;">
+        <h2>Student Panel</h2>
+        <form id="studentLoginForm" onsubmit="return false;">
+            <label>Student ID:</label>
+            <input type="text" id="studentId" placeholder="Enter Student ID">
+            <label>Password:</label>
+            <input type="password" id="studentPass" placeholder="Enter Password">
+            <button type="button" onclick="studentLogin()">Login</button>
+        </form>
+
+        <div id="studentPanel" style="display:none;">
+            <label>Search Book:</label>
+            <input type="text" id="studentSearch" placeholder="Search by author or book" onkeyup="loadStudentBooks()">
+
+            <h3>Available Books</h3>
+            <table id="studentBookTable">
+                <tr><th>Author</th><th>Book</th><th>ID</th><th>Status</th><th>Action</th><th>Due Date</th><th>Fine</th></tr>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API = '/api';
+    let currentStudentId = null;
+    let maxBorrow = 3;
+    let finePerDay = 5;
+
+    // simple UI helpers
+    function showSection(id) {
+      document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+      document.getElementById(id).style.display = 'block';
+    }
+
+    // Admin login -> call backend
+    async function adminLogin() {
+      const id = document.getElementById('adminId').value;
+      const pass = document.getElementById('adminPass').value;
+      const res = await fetch(API + '/admin/login', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({id: id, password: pass})
+      });
+      if (res.ok) {
+        document.getElementById('adminPanel').style.display = 'block';
+        loadBooks();
+      } else {
+        alert('Invalid Admin credentials');
+      }
+    }
+
+    async function addOrUpdateBook() {
+      const aname = document.getElementById('authorName').value.trim();
+      const bname = document.getElementById('bookName').value.trim();
+      const editId = document.getElementById('editBookId').value;
+
+      if (!aname || !bname) { alert('Enter all details'); return; }
+
+      if (editId) {
+        await fetch(API + '/books/' + editId, {
+          method: 'PUT',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({author: aname, title: bname})
+        });
+        alert('Book updated!');
+        document.getElementById('editBookId').value = '';
+      } else {
+        await fetch(API + '/books', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({author: aname, title: bname})
+        });
+        alert('Book added!');
+      }
+      document.getElementById('addBookForm').reset();
+      loadBooks();
+    }
+
+    async function loadBooks() {
+      const search = document.getElementById('adminSearch').value || '';
+      const table = document.getElementById('bookTable');
+      table.innerHTML = `<tr><th>Author</th><th>Book</th><th>ID</th><th>Status</th><th>Borrower ID</th><th>Due Date</th><th>Actions</th></tr>`;
+      const res = await fetch(API + '/books?search=' + encodeURIComponent(search));
+      const books = await res.json();
+      books.forEach(b => {
+        const overdue = (!b.available && b.dueDate && new Date(b.dueDate) < new Date()) ? 'class="overdue"' : '';
+        table.innerHTML += `<tr ${overdue}>
+          <td>${b.author}</td>
+          <td>${b.title}</td>
+          <td>${b.id}</td>
+          <td>${b.available ? 'Available' : 'Issued'}</td>
+          <td>${b.borrowedBy ? b.borrowedBy : '-'}</td>
+          <td>${b.dueDate ? b.dueDate : '-'}</td>
+          <td>
+            <button class="edit action" onclick="editBook(${b.id})">Edit</button>
+            <button class="delete action" onclick="deleteBook(${b.id})">Delete</button>
+          </td>
+        </tr>`;
+      });
+    }
+
+    function editBook(id) {
+      // populate fields by getting book
+      fetch(API + '/books?search=').then(r=>r.json()).then(list=>{
+        const book = list.find(x=>x.id===id);
+        if (book) {
+          document.getElementById('authorName').value = book.author;
+          document.getElementById('bookName').value = book.title;
+          document.getElementById('editBookId').value = book.id;
+        }
+      });
+    }
+
+    async function deleteBook(id) {
+      if (!confirm('Are you sure?')) return;
+      await fetch(API + '/books/' + id, { method: 'DELETE' });
+      loadBooks();
+    }
+
+    // Student
+    async function studentLogin() {
+      const sid = document.getElementById('studentId').value;
+      const pass = document.getElementById('studentPass').value;
+      const res = await fetch(API + '/student/login', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({studentId: sid, password: pass})
+      });
+      if (res.ok) {
+        currentStudentId = sid;
+        document.getElementById('studentPanel').style.display = 'block';
+        loadStudentBooks();
+      } else {
+        alert('Invalid student credentials');
+      }
+    }
+
+    async function loadStudentBooks() {
+      const search = document.getElementById('studentSearch').value || '';
+      const table = document.getElementById('studentBookTable');
+      table.innerHTML = `<tr><th>Author</th><th>Book</th><th>ID</th><th>Status</th><th>Action</th><th>Due Date</th><th>Fine</th></tr>`;
+      const res = await fetch(API + '/books?search=' + encodeURIComponent(search));
+      const books = await res.json();
+
+      // fetch student's borrowed count if needed (not implemented endpoint) - we'll infer from books
+      let borrowedCount = books.filter(b => b.borrowedBy === currentStudentId).length;
+
+      books.forEach(b => {
+        const isAvailable = b.available;
+        let action = '';
+        let dueDate = b.dueDate ? b.dueDate : '-';
+        let fine = '-';
+        if (isAvailable) {
+          action = `<button class='action' onclick='lendBook(${b.id})' ${borrowedCount >= maxBorrow ? "disabled" : ""}>Lend</button>`;
+        } else {
+          if (b.borrowedBy === currentStudentId) {
+            action = `<button class='action' onclick='returnBook(${b.id})'>Return</button>`;
+          } else {
+            action = `<button class='action' disabled>Not available</button>`;
+          }
+          if (b.dueDate) {
+            const today = new Date();
+            const due = new Date(b.dueDate);
+            const diff = Math.floor((today - due) / (1000*60*60*24));
+            if (diff > 0) fine = diff * finePerDay;
+          }
+        }
+
+        const overdue = (!b.available && b.dueDate && new Date(b.dueDate) < new Date()) ? 'class="overdue"' : '';
+        table.innerHTML += `<tr ${overdue}>
+          <td>${b.author}</td>
+          <td>${b.title}</td>
+          <td>${b.id}</td>
+          <td>${b.available ? 'Available' : 'Issued'}</td>
+          <td>${action}</td>
+          <td>${dueDate}</td>
+          <td>${fine}</td>
+        </tr>`;
+      });
+    }
+
+    async function lendBook(id) {
+      if (!currentStudentId) { alert('Login first'); return; }
+      const res = await fetch(API + '/books/' + id + '/lend', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({studentId: currentStudentId})
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert('Book lended successfully!');
+        loadStudentBooks(); loadBooks();
+      } else {
+        alert('Error: ' + (data.error || 'cannot lend'));
+      }
+    }
+
+    async function returnBook(id) {
+      if (!currentStudentId) { alert('Login first'); return; }
+      const res = await fetch(API + '/books/' + id + '/return', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({studentId: currentStudentId})
+      });
+      const data = await res.json();
+      alert(data.fine && data.fine > 0 ? `Book returned! Fine: ₹${data.fine}` : 'Book returned on time!');
+      loadStudentBooks(); loadBooks();
+    }
+
+</script>
+</body>
+</html>

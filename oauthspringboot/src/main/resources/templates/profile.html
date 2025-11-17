@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>User Profile</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #f0f4f8, #cfd9df);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .profile-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            text-align: center;
+            width: 320px;
+        }
+
+        .profile-card img {
+            border-radius: 50%;
+            width: 120px;
+            height: 120px;
+            margin-bottom: 1rem;
+            border: 3px solid #3f51b5;
+        }
+
+        .profile-card h2 {
+            margin: 0.5rem 0;
+            color: #333;
+        }
+
+        .profile-card p {
+            color: #666;
+            font-size: 0.95rem;
+        }
+
+        .logout-btn {
+            margin-top: 1.5rem;
+            padding: 0.5rem 1rem;
+            background-color: #ff4d4d;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .logout-btn:hover {
+            background-color: #e60000;
+        }
+    </style>
+</head>
+<body>
+<div class="profile-card">
+    <img th:src="${user['picture']}" alt="User Photo"/>
+    <h2 th:text="${user['name']}">User Name</h2>
+    <p th:text="${user['email']}">user@example.com</p>
+    <form th:action="@{/logout}" method="post">
+        <button type="submit" class="logout-btn">Logout</button>
+    </form>
+</div>
+</body>
+</html>

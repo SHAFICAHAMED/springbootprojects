@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            text-align: center;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        form {
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            width: 250px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        button {
+            padding: 10px 15px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        h2 {
+            color: #444;
+        }
+
+        .filter-links a {
+            margin: 0 10px;
+            color: #007bff;
+            text-decoration: none;
+            font-size: 16px;
+        }
+
+        .filter-links a:hover {
+            text-decoration: underline;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            background: white;
+            padding: 10px;
+            margin: 5px auto;
+            width: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-radius: 5px;
+            box-shadow: 0px 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .task-name {
+            font-weight: bold;
+        }
+
+        .completed {
+            text-decoration: line-through;
+            color: gray;
+        }
+
+        .actions a {
+            text-decoration: none;
+            font-size: 20px;
+            padding: 5px;
+            font-weight: bold;
+        }
+
+        .update {
+            color: #28a745;
+        }
+
+        .delete {
+            color: #dc3545;
+        }
+
+        .update:hover {
+            color: #1e7e34;
+        }
+
+        .delete:hover {
+            color: #c82333;
+        }
+
+    </style>
+</head>
+<body>
+
+<h1>To-Do List</h1>
+
+<form action="/add" method="post">
+    <input type="text" name="name" placeholder="New Task" required>
+    <button type="submit">Add</button>
+</form>
+
+<h2>Task List</h2>
+
+<div class="filter-links">
+    <a href="/">All Tasks</a>
+    <a href="/?completed=true">Completed Tasks</a>
+    <a href="/?completed=false">Pending Tasks</a>
+</div>
+
+<ul>
+    <li th:each="task : ${tasks}">
+            <span th:text="${task.name}"
+                  th:class="${task.completed} ? 'task-name completed' : 'task-name'">
+            </span>
+
+        <div class="actions">
+            <a th:href="@{/update/{id}(id=${task.id}, completed=${!task.completed})}" class="update">✔</a>
+            <a th:href="@{/delete/{id}(id=${task.id})}" class="delete">❌</a>
+        </div>
+    </li>
+</ul>
+
+</body>
+</html>
