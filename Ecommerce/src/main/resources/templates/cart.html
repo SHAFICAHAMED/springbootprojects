@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Your Cart</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.css" rel="stylesheet">
+    <script>
+        function autoSubmit(form) {
+            form.submit();
+        }
+    </script>
+    <style>
+        .navbar {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .cart-card {
+            border: 1px solid #eaeaea;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .cart-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+        .card-body {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .btn-order {
+            background-color: #28a745;
+            color: white;
+            border-radius: 50px;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            box-shadow: 0 5px 15px rgba(0, 123, 255, 0.1);
+            transition: background-color 0.3s ease;
+        }
+        .btn-order:hover {
+            background-color: #218838;
+        }
+        .search-bar input {
+            border-radius: 20px;
+            padding-left: 20px;
+            transition: all 0.3s;
+        }
+        .search-bar button {
+            border-radius: 20px;
+        }
+        .cart-footer {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        .cart-item-total {
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+
+<!--&lt;!&ndash; Navbar with Search &ndash;&gt;-->
+<!--<nav class="navbar navbar-expand-lg navbar-light bg-light">-->
+<!--    <div class="container-fluid">-->
+<!--        <a class="navbar-brand" href="/">Your Store</a>-->
+<!--        &lt;!&ndash; Search Bar &ndash;&gt;-->
+<!--        <form class="d-flex search-bar" action="/search" method="get" role="search">-->
+<!--            <input class="form-control me-2" type="search" placeholder="Search products" name="query" aria-label="Search">-->
+<!--            <button class="btn btn-outline-success" type="submit">-->
+<!--                <i class="fas fa-search"></i> Search-->
+<!--            </button>-->
+<!--        </form>-->
+<!--    </div>-->
+<!--</nav>-->
+
+<!-- Cart Section -->
+<div class="container mt-4">
+    <h2 class="mb-4 text-center">🛒 Your Cart</h2>
+
+    <form method="post" action="/api/cart/update" id="cartForm">
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-4" th:each="item : ${cartItems}">
+                <div class="cart-card">
+                    <img th:src="@{'/uploads/' + ${item.product.imageName}}" class="card-img-top" alt="Product Image">
+                    <div class="card-body">
+                        <h5 class="card-title" th:text="${item.product.name}">Product Name</h5>
+                        <p class="card-text text-muted mb-1 cart-item-total">Price: ₹ <span th:text="${item.product.price}">0.0</span></p>
+
+                        <div class="mb-3 mt-auto">
+                            <label class="form-label">Quantity</label>
+                            <input type="number"
+                                   min="1"
+                                   class="form-control rounded-3"
+                                   name="quantities"
+                                   th:value="${item.quantity}"
+                                   onchange="autoSubmit(this.form)" />
+                            <input type="hidden"
+                                   name="itemIds"
+                                   th:value="${item.id}" />
+                        </div>
+
+                        <div class="fw-bold mt-2">Total: ₹ <span th:text="${item.product.price * item.quantity}">0.0</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cart Footer with Subtotal -->
+        <div class="d-flex justify-content-between align-items-center mt-4 flex-wrap gap-3 cart-footer">
+            <h4 class="mb-0">Subtotal: ₹ <span th:text="${total}">0.0</span></h4>
+        </div>
+    </form>
+
+    <!-- Order Now Button -->
+    <form method="get" th:action="@{/api/order/place}" class="mt-4 text-center">
+        <button type="submit" class="btn btn-order">🚀 Order Now</button>
+    </form>
+</div>
+
+</body>
+</html>

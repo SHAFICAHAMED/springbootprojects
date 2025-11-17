@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+
+<ul class="navbar-nav ms-auto">
+  <li class="nav-item" th:if="${session.userName != null}">
+    <a class="btn btn-primary" th:text="${session.userName}">My Name</a>
+  </li>
+  <li class="nav-item" th:if="${session.userName == null}">
+    <a class="btn btn-outline-primary" href="/login">Login</a>
+  </li>
+</ul>
+
+</body>
+</html>
